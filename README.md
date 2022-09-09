@@ -139,6 +139,68 @@ python train.py --data coco.yaml --cfg yolov5n.yaml --weights '' --batch-size 12
 </details>
 
 <details open>
+<summary>TensorRT, ONNX, quantization and sparsification</summary>
+On the Jetson devices, replace **python** with **sudo python3**
+
+To get the ONNX and TensorRT files, use
+```bash
+$ python export.py --weights yolov5n.pt --device 0 --include engine onnx --device 0
+```
+
+To compile a TensorRT engine at half precision
+```bash
+$ python export.py --weights yolov5n.pt --device 0 --include engine --device 0 --half
+```
+
+To compile a TensorRT engine at INT8 precision, use the following command:
+
+```bash
+$ python export.py --weights yolov5n.pt --device 0 --include engine --device 0 --int8 --calibrate --calib-num-images 200 --calib-algo minmax --seed 20
+```
+
+The code supports 3 INT8 calibration algorithms 'entropy2', 'entropy' and 'minmax'.
+I got the best results with the above arguments.
+
+To apply sparsification on the network and then compile to a TensorRT engine, use:
+
+```bash
+$ python export.py --weights yolov5n.pt --device 0 --include engine --device 0 --sparsify --prop 0.1 [--struct]
+```
+The code supports both structured and unstructured pruning. Set the 'struct' flag if you want to use structured pruning. I found that structured sparsification/pruning is a much more aggressive form of sparsification leading to exptremely poor resutls. Hence, it is not recommended. You can combine sparsification with any of the conversion methods mentioned above. 
+
+To compile a TensorRT engine with an NMS plugin. To attach the NMS plugin, use:
+```bash
+$ python export.py --weights yolov5n.pt --device 0 --include engine --device 0 --end2end --conf-thres 0.45 --iou-thres 0.25 --topk-all 100
+```
+You can use sparsification and quantization with the NMS plugin as well.
+</details>
+
+<details open>
+<summary>Evaluation</summary>
+If you compiled the model using INT8 or without quantization,
+
+```bash
+$ python val.py --weights yolov5n.engine --data data/coco_subset.yaml
+```
+
+If you used TensorRT with half precision,
+
+```bash
+$ python val.py --weights yolov5n.engine --data data/coco_subset.yaml
+```
+
+
+**[Not tested]**
+If you compiled a TensorRT model with NMS plugin, use the following command:
+
+```bash
+$ python trt_inference_nms.py --weights yolov5n.engine --data data/coco_subset.yaml [--half]
+```
+Set the half flag if you the model is compiled with FP16 precision.
+
+
+</details>
+<details>
 <summary>Tutorials</summary>
 
 - [Train Custom Data](https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data)  🚀 RECOMMENDED
