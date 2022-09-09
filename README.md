@@ -180,15 +180,17 @@ You can use sparsification and quantization with the NMS plugin as well.
 If you compiled the model using INT8 or without quantization,
 
 ```bash
-$ python val.py --weights yolov5n.engine --data data/coco_subset.yaml
+$ python val.py --weights yolov5n.engine --data data/coco_subset.yaml --eval-data instances_val2017_subset.json
 ```
 
 If you used TensorRT with half precision,
 
 ```bash
-$ python val.py --weights yolov5n.engine --data data/coco_subset.yaml
+$ python val.py --weights yolov5n.engine --data data/coco_subset.yaml --eval-data instances_val2017_subset.json
 ```
 
+If you want to evaluate on the validation split of COCO,
+use **--data data/coco.yaml** and **--eval-data instances_val2017.json** 
 
 **[Not tested]**
 If you compiled a TensorRT model with NMS plugin, use the following command:
